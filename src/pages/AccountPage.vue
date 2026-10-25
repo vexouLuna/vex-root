@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { VxAccount, VxAvatar, VxButton, VxCallout, VxDialog, VxEmptyState, VxField, VxInput, VxSiteShell, VxSpinner } from '@vex/ui'
+import { VxAccount, VxAvatar, VxButton, VxCallout, VxConfirm, VxDialog, VxEmptyState, VxField, VxInput, VxPageHead, VxSiteShell, VxSpinner } from '@vex/ui'
 import { useAccount } from '@vex/ui/account'
 import { computed, ref, watch } from 'vue'
 import { confirmsForget, memberSince, reconnectUrl } from '@/lib/account'
@@ -90,7 +90,7 @@ watch(forgetting, (open) => {
   <VxSiteShell site="root">
     <template #account><VxAccount profile-href="/account" /></template>
     <div class="account">
-      <h1 class="vx-display">Profile</h1>
+      <VxPageHead title="Profile" />
 
       <VxCallout v-if="forgotten" tone="ok" title="You're forgotten">
         Your vexoul.net sign-in, sessions and watch progress are deleted, and we asked Twitch to drop the
@@ -164,13 +164,16 @@ watch(forgetting, (open) => {
       </template>
     </div>
 
-    <VxDialog v-model:open="clearing" title="Clear watch progress?">
+    <VxConfirm
+      v-model:open="clearing"
+      title="Clear watch progress?"
+      confirm-label="Clear"
+      tone="danger"
+      :loading="busy === 'progress'"
+      @confirm="clearProgress"
+    >
       Every VOD will start from the beginning again. This can't be undone.
-      <template #actions="{ close }">
-        <VxButton variant="ghost" @click="close()">Cancel</VxButton>
-        <VxButton variant="danger-solid" :loading="busy === 'progress'" @click="clearProgress">Clear</VxButton>
-      </template>
-    </VxDialog>
+    </VxConfirm>
 
     <VxDialog v-model:open="forgetting" title="Forget me?">
       <form id="forget-form" class="forget" @submit.prevent="forget">
@@ -197,7 +200,8 @@ watch(forgetting, (open) => {
 
 <style scoped>
 .account { display: flex; flex-direction: column; gap: 20px; max-width: 720px; width: 100%; margin: 0 auto; }
-.account h1 { font-size: 34px; }
+/* The column's gap already spaces the head. */
+.account > .vx-pagehead { margin-bottom: 0; }
 .loading { display: flex; justify-content: center; padding: 40px 0; }
 .who { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 16px; align-items: center; padding: 20px; }
 .who-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -215,7 +219,6 @@ watch(forgetting, (open) => {
 .forget { display: flex; flex-direction: column; gap: 12px; }
 .forget p { margin: 0; }
 @container vx-site (max-width: 700px) {
-  .account h1 { font-size: 28px; }
   .row { flex-direction: column; align-items: stretch; }
 }
 </style>
