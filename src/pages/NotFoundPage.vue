@@ -7,7 +7,7 @@ const route = useRoute()
 
 <template>
   <VxSiteShell site="root">
-    <template #account><VxAccount /></template>
+    <template #account><VxAccount profile-href="/account" /></template>
     <VxEmptyState code="404" title="Not found">
       Nothing lives at <span class="vx-mono">{{ route.path }}</span>. It was probably never real.
       <template #actions>

@@ -12,6 +12,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', component: () => import('./pages/LandingPage.vue') },
+    { path: '/account', component: () => import('./pages/AccountPage.vue') },
     { path: '/obs_sources', component: () => import('./pages/ObsSourcesPage.vue') },
     // Browser source for OBS: transparent, no site chrome or starfield.
     { path: '/obs_sources/countdown', component: () => import('./pages/CountdownPage.vue') },

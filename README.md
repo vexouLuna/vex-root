@@ -19,6 +19,7 @@ git config core.hooksPath .conventions/githooks   # once per clone: branch-name 
 | path | what |
 |---|---|
 | `/` | links, and a stream card from the archive API: the live stream (`/streams?is_live=true`) or, offline, the latest VOD; both link to the past streams |
+| `/account` | the signed-in visitor's profile (Twitch name and avatar, member since) with sign out everywhere, reconnect Twitch, clear watch progress and forget me, all against vex-auth; signed out, a sign-in prompt. The header's account menu links here |
 | `/obs_sources` | list of the OBS browser sources |
 | `/obs_sources/countdown?h=&m=&s=&text=` | transparent countdown for OBS; no site chrome |
 | `/tools/httpsredirect#r=` | opens the URL-encoded app link in `r` (`obsidian://…`, `steam://…`) and closes its tab (except the first time for each app, so the browser's "allow this site" prompt can be answered), for places that only open https links; `r` is in the fragment, so it never reaches the server, and web links and `javascript:`/`data:` are refused |

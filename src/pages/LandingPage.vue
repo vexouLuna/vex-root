@@ -7,7 +7,7 @@ import { LINK_GROUPS } from '@/lib/links'
 
 <template>
   <VxSiteShell site="root">
-    <template #account><VxAccount /></template>
+    <template #account><VxAccount profile-href="/account" /></template>
     <div class="root">
       <section class="intro">
         <img class="logo" src="/logo.svg" alt="vexoul.net" width="240" height="80" />
