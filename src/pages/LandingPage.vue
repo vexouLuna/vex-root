@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { VxSiteShell } from '@vex/ui'
-import RootAccount from '@/components/RootAccount.vue'
+import { VxAccount, VxSiteShell } from '@vex/ui'
 import LinkList from '@/components/LinkList.vue'
 import LiveCard from '@/components/LiveCard.vue'
 import { LINK_GROUPS } from '@/lib/links'
@@ -8,7 +7,7 @@ import { LINK_GROUPS } from '@/lib/links'
 
 <template>
   <VxSiteShell site="root">
-    <template #account><RootAccount /></template>
+    <template #account><VxAccount profile-href="/account" /></template>
     <div class="root">
       <section class="intro">
         <img class="logo" src="/logo.svg" alt="vexoul.net" width="240" height="80" />

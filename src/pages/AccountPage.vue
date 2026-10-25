@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { VxAvatar, VxButton, VxCallout, VxDialog, VxEmptyState, VxField, VxInput, VxSiteShell, VxSpinner } from '@vex/ui'
+import { VxAccount, VxAvatar, VxButton, VxCallout, VxDialog, VxEmptyState, VxField, VxInput, VxSiteShell, VxSpinner } from '@vex/ui'
 import { useAccount } from '@vex/ui/account'
 import { computed, ref, watch } from 'vue'
-import RootAccount from '@/components/RootAccount.vue'
 import { confirmsForget, memberSince, reconnectUrl } from '@/lib/account'
 
 const account = useAccount()
@@ -89,7 +88,7 @@ watch(forgetting, (open) => {
 
 <template>
   <VxSiteShell site="root">
-    <template #account><RootAccount /></template>
+    <template #account><VxAccount profile-href="/account" /></template>
     <div class="account">
       <h1 class="vx-display">Profile</h1>
 
