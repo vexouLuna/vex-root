@@ -11,8 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@vex/ui": "github:vexouLuna/vex-ui#v0.30.0",
-    "@vex/vods-core": "github:vexouLuna/vods-core#v0.39.0",
+    "@vex/ui": "github:vexouLuna/vex-ui#v0.32.0",
+    "@vex/vods-core": "github:vexouLuna/vods-core#v0.40.0",
     "vue": "^3.5.44",
     "vue-router": "^4.6.4"
   },
