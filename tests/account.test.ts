@@ -1,18 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { confirmsForget, memberSince, reconnectUrl } from '../src/lib/account'
-
-describe('confirmsForget', () => {
-  it('takes the login in any case, ignoring stray spaces', () => {
-    expect(confirmsForget('Alice ', 'alice')).toBe(true)
-    expect(confirmsForget('ALICE', 'alice')).toBe(true)
-  })
-
-  it('refuses anything else', () => {
-    expect(confirmsForget('', 'alice')).toBe(false)
-    expect(confirmsForget('alic', 'alice')).toBe(false)
-    expect(confirmsForget('alice2', 'alice')).toBe(false)
-  })
-})
+import { memberSince, reconnectUrl } from '../src/lib/account'
 
 describe('reconnectUrl', () => {
   it('forces Twitch and comes back to the page', () => {

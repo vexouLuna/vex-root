@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { VxAccount, VxAvatar, VxButton, VxCallout, VxConfirm, VxDialog, VxEmptyState, VxField, VxInput, VxPageHead, VxSiteShell, VxSpinner } from '@vex/ui'
+import { VxAccount, VxAvatar, VxButton, VxCallout, VxConfirm, VxEmptyState, VxPageHead, VxSiteShell, VxSpinner } from '@vex/ui'
 import { useAccount } from '@vex/ui/account'
-import { computed, ref, watch } from 'vue'
-import { confirmsForget, memberSince, reconnectUrl } from '@/lib/account'
+import { ref, watch } from 'vue'
+import { memberSince, reconnectUrl } from '@/lib/account'
 
 const account = useAccount()
 const user = account.user
@@ -11,7 +11,6 @@ const busy = ref<'everywhere' | 'progress' | 'forget' | null>(null)
 const notice = ref<{ tone: 'ok' | 'error'; text: string } | null>(null)
 const clearing = ref(false)
 const forgetting = ref(false)
-const typed = ref('')
 const forgotten = ref(false)
 
 watch(
@@ -29,8 +28,6 @@ watch(
   },
   { immediate: true },
 )
-
-const confirmed = computed(() => !!user.value && confirmsForget(typed.value, user.value.login))
 
 async function signOutEverywhere(): Promise<void> {
   busy.value = 'everywhere'
@@ -57,13 +54,13 @@ async function clearProgress(): Promise<void> {
 }
 
 async function forget(): Promise<void> {
-  if (!confirmed.value) return
+  if (!user.value) return
   busy.value = 'forget'
   try {
     const res = await account.request('/v1/me', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ confirm: typed.value.trim() }),
+      body: JSON.stringify({ confirm: user.value.login }),
     })
     if (res.ok) {
       notice.value = null
@@ -80,10 +77,6 @@ async function forget(): Promise<void> {
   }
   busy.value = null
 }
-
-watch(forgetting, (open) => {
-  if (!open) typed.value = ''
-})
 </script>
 
 <template>
@@ -175,26 +168,19 @@ watch(forgetting, (open) => {
       Every VOD will start from the beginning again. This can't be undone.
     </VxConfirm>
 
-    <VxDialog v-model:open="forgetting" title="Forget me?">
-      <form id="forget-form" class="forget" @submit.prevent="forget">
-        <p>This deletes your account here for good. It can't be undone.</p>
-        <VxField v-if="user" v-slot="{ id }" :label="`Type ${user.login} to confirm`">
-          <VxInput :id="id" v-model="typed" mono />
-        </VxField>
-      </form>
-      <template #actions="{ close }">
-        <VxButton variant="ghost" @click="close()">Cancel</VxButton>
-        <VxButton
-          variant="danger-solid"
-          type="submit"
-          form="forget-form"
-          :disabled="!confirmed"
-          :loading="busy === 'forget'"
-        >
-          Forget me
-        </VxButton>
-      </template>
-    </VxDialog>
+    <VxConfirm
+      v-if="user"
+      v-model:open="forgetting"
+      title="Forget me?"
+      confirm-label="Forget me"
+      tone="danger"
+      :confirm-text="user.login"
+      confirm-ignore-case
+      :loading="busy === 'forget'"
+      @confirm="forget"
+    >
+      This deletes your account here for good. It can't be undone.
+    </VxConfirm>
   </VxSiteShell>
 </template>
 
@@ -216,8 +202,6 @@ watch(forgetting, (open) => {
 .row > :deep(.vx-btn) { flex: none; }
 .danger { border-color: var(--vx-bad); }
 .danger h2 { color: var(--vx-bad); }
-.forget { display: flex; flex-direction: column; gap: 12px; }
-.forget p { margin: 0; }
 @container vx-site (max-width: 700px) {
   .row { flex-direction: column; align-items: stretch; }
 }
