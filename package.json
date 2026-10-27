@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@vex/ui": "github:vexouLuna/vex-ui#v0.32.0",
-    "@vex/vods-core": "github:vexouLuna/vods-core#v0.42.0",
+    "@vex/vods-core": "github:vexouLuna/vods-core#v0.42.1",
     "vue": "^3.5.44",
     "vue-router": "^4.6.4"
   },
