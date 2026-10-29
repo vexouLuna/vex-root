@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // /tools/httpsredirect#r=<url-encoded app link>: opens the app link, then closes the tab (see lib/redirect).
-import { VxEmptyState, VxSiteShell } from '@vex/ui'
+import { VxButton, VxEmptyState, VxSiteShell } from '@vex/ui'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { redirectTarget } from '@/lib/redirect'
 
@@ -50,11 +50,11 @@ onUnmounted(() => {
     <VxEmptyState v-else-if="stays" title="Opening…">
       If your browser asks, allow this site to open the app (tick “always allow” so it won't ask again), then
       close this tab. Next time it closes itself.
-      <template #actions><a :href="target">Open it again</a></template>
+      <template #actions><VxButton :href="target">Open it again</VxButton></template>
     </VxEmptyState>
     <VxEmptyState v-else :title="opened ? 'Opened' : 'Opening…'">
       {{ opened ? 'You can close this tab.' : 'Handing over to the app.' }}
-      <template #actions><a :href="target">Open it again</a></template>
+      <template #actions><VxButton :href="target">Open it again</VxButton></template>
     </VxEmptyState>
   </VxSiteShell>
 </template>

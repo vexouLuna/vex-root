@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // Stream card: the live stream (links to Twitch) or, when offline, the latest VOD (links to it on vods.vexoul.net),
-// in the same layout. Both have a "watch past streams" button. Hidden until the first answer, and while the archive
-// API can't be reached. Polls only while the tab is visible (usePoll), and the clocks tick once a second (useNow).
+// in the same layout. Both have a "watch past streams" button. A skeleton holds its place until the first answer;
+// hidden while the archive API can't be reached. Polls only while the tab is visible (usePoll), and the clocks tick once a second (useNow).
 // Offline, it also shows the next slot on the Twitch schedule (left out if there's none or Twitch can't be reached).
-import { VxButton, VxChip, VxNoThumbnail, VxPosters, VxStatusDot, formatDuration } from '@vex/ui'
+import { VxButton, VxChip, VxNoThumbnail, VxPosters, VxSkeleton, VxStatusDot, formatDuration } from '@vex/ui'
 import { useNow, usePoll } from '@vex/ui/utils'
 import { computed, ref, watch } from 'vue'
 import { SCHEDULE_URL, VODS_URL } from '@/lib/config'
@@ -64,7 +64,8 @@ const title = computed(() => card.value?.title ?? (card.value?.live ? 'Live on T
 </script>
 
 <template>
-  <article v-if="card" class="card vx-panel" :class="{ 'is-live': card.live }">
+  <VxSkeleton v-if="!stream.data.value && !stream.error.value" class="card placeholder" />
+  <article v-else-if="card" class="card vx-panel" :class="{ 'is-live': card.live }">
     <a :href="card.href" rel="noopener" class="main" :aria-label="`${card.live ? 'Live now' : 'Latest VOD'}: ${title}`">
       <div class="thumb">
         <img v-if="card.image && !broken" :src="card.image" alt="" decoding="async" @error="broken = true" />
@@ -97,6 +98,7 @@ const title = computed(() => card.value?.title ?? (card.value?.live ? 'Live on T
 
 <style scoped>
 .card { display: flex; flex-direction: column; overflow: hidden; width: 100%; max-width: 360px; }
+.placeholder { aspect-ratio: 360 / 300; }
 .card:has(.main:hover) { border-color: var(--vx-accent); }
 .card.is-live:has(.main:hover) { border-color: var(--vx-bad); }
 .main { display: flex; flex-direction: column; color: inherit; text-decoration: none; }
