@@ -62,7 +62,7 @@ onUnmounted(() => {
 <template>
   <div class="countdown">
     <p class="line">{{ shown }}</p>
-    <p class="line">{{ text || ' ' }}</p>
+    <p class="line">{{ total === 0 ? 'Add ?m=5 (or h, s, text) to the address' : text || ' ' }}</p>
   </div>
 </template>
 

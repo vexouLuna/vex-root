@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { VxAccount, VxSiteShell } from '@vex/ui'
+import { VxAccount, VxPageHead, VxSiteShell } from '@vex/ui'
 import LinkList from '@/components/LinkList.vue'
 import { TWITCH_LINK, VODS_LINK, type LinkGroup } from '@/lib/links'
 
 const groups: LinkGroup[] = [
   {
     title: 'Homebrew',
-    links: [{ name: 'Countdown', handle: '?h=&m=&s=&text=', href: '/obs_sources/countdown' }],
+    links: [{ name: 'Countdown', handle: '?h=&m=&s=&text=', href: '/obs_sources/countdown?m=5' }],
   },
   {
     title: 'External',
@@ -18,13 +18,10 @@ const groups: LinkGroup[] = [
 <template>
   <VxSiteShell site="root">
     <template #account><VxAccount profile-href="/account" /></template>
-    <h1 class="vx-display title">OBS sources</h1>
-    <p class="vx-muted lead">Browser sources for the stream. Add one to OBS as a browser source with a transparent background.</p>
+    <VxPageHead title="OBS sources" subtitle="Browser sources for the stream. Add one to OBS as a browser source with a transparent background." />
     <LinkList :groups="groups" />
   </VxSiteShell>
 </template>
 
 <style scoped>
-.title { font-size: 28px; }
-.lead { margin: 8px 0 28px; }
 </style>

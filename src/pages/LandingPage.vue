@@ -12,6 +12,7 @@ import { LINK_GROUPS } from '@/lib/links'
       <section class="intro">
         <img class="logo" src="/logo.svg" alt="vexoul.net" width="240" height="80" />
         <h1 class="vx-display">Did you nose?</h1>
+        <p class="tagline vx-muted">vexouLuna — streams, VODs and links</p>
         <p class="poem vx-muted">
           <span>Bex is not real.</span>
           <span>You are not real.</span>
@@ -19,9 +20,9 @@ import { LINK_GROUPS } from '@/lib/links'
           <span>The only thing that's real</span>
           <span>is my love for yo momma.</span>
         </p>
-        <LiveCard />
+        <LiveCard class="live" />
       </section>
-      <LinkList :groups="LINK_GROUPS" />
+      <LinkList class="links" :groups="LINK_GROUPS" />
     </div>
   </VxSiteShell>
 </template>
@@ -32,11 +33,17 @@ import { LINK_GROUPS } from '@/lib/links'
 /* As wide as the stream card below it. */
 .logo { width: 100%; height: auto; }
 .intro h1 { font-size: 34px; margin-top: 8px; }
+.tagline { margin-top: -6px !important; }
 .intro p { margin: 0; line-height: 1.6; }
 /* A poem: one line per span, never re-wrapped into a paragraph. */
 .poem span { display: block; }
 @container vx-site (max-width: 700px) {
-  .root { grid-template-columns: 1fr; gap: 28px; }
+  /* Links first: the intro's children join the grid so the poem and stream card can sit below them. */
+  .root { grid-template-columns: 1fr; gap: 28px; text-align: center; }
+  .intro { display: contents; }
+  .intro > * { justify-self: center; }
+  .links { order: 1; text-align: left; }
+  .poem, .live { order: 2; }
   .intro h1 { font-size: 28px; }
 }
 </style>
