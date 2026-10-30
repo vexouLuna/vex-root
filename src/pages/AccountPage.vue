@@ -6,7 +6,7 @@ import { memberSince, reconnectUrl } from '@/lib/account'
 
 const account = useAccount()
 const user = account.user
-const since = ref<string | null>(null) // /v1/me's createdAt: the account's user type doesn't carry it
+const since = ref<string | null>(null) // /v2/me's created_at: the account's user type doesn't carry it
 const busy = ref<'everywhere' | 'progress' | 'forget' | null>(null)
 const notice = ref<{ tone: 'ok' | 'error'; text: string } | null>(null)
 const clearing = ref(false)
@@ -19,8 +19,8 @@ watch(
     since.value = null
     if (!u) return
     try {
-      const res = await account.request('/v1/me', { headers: { Accept: 'application/json' } })
-      const created = res.ok ? (await res.json()).createdAt : null
+      const res = await account.request('/v2/me', { headers: { Accept: 'application/json' } })
+      const created = res.ok ? (await res.json()).created_at : null
       if (typeof created === 'string') since.value = memberSince(created)
     } catch {
       // "Member since" is a nicety: leave it out
@@ -42,7 +42,7 @@ function reconnect(): void {
 async function clearProgress(): Promise<void> {
   busy.value = 'progress'
   try {
-    const res = await account.request('/v1/progress', { method: 'DELETE' })
+    const res = await account.request('/v2/progress', { method: 'DELETE' })
     notice.value = res.ok
       ? { tone: 'ok', text: 'Your watch progress is cleared.' }
       : { tone: 'error', text: `Couldn't clear your watch progress (${res.status}). Try again.` }
@@ -57,7 +57,7 @@ async function forget(): Promise<void> {
   if (!user.value) return
   busy.value = 'forget'
   try {
-    const res = await account.request('/v1/me', {
+    const res = await account.request('/v2/me', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ confirm: user.value.login }),
