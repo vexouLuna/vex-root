@@ -22,6 +22,8 @@ let flip = false
 let audio: HTMLAudioElement | undefined
 
 function run() {
+  // No time given: show the help line, never ring.
+  if (total === 0) return
   const left = end - Date.now()
   if (left > 0) {
     const s = Math.ceil(left / 1000)
