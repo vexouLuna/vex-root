@@ -36,12 +36,13 @@ import { LINK_GROUPS } from '@/lib/links'
 /* A poem: one line per span, never re-wrapped into a paragraph. */
 .poem span { display: block; }
 @container vx-site (max-width: 700px) {
-  /* Links first: the intro's children join the grid so the poem and stream card can sit below them. */
+  /* Logo and title, then the stream card, then the links, the poem last: the intro's children join the grid to be reordered. */
   .root { grid-template-columns: 1fr; gap: 28px; text-align: center; }
   .intro { display: contents; }
   .intro > * { justify-self: center; }
-  .links { order: 1; text-align: left; }
-  .poem, .live { order: 2; }
+  .live { order: 1; }
+  .links { order: 2; text-align: left; }
+  .poem { order: 3; }
   .intro h1 { font-size: 28px; }
 }
 </style>

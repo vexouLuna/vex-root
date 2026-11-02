@@ -18,7 +18,9 @@ const groups: LinkGroup[] = [
 <template>
   <VxSiteShell site="root">
     <template #account><VxAccount profile-href="/account" /></template>
-    <VxPageHead title="OBS sources" subtitle="Browser sources for the stream. Add one to OBS as a browser source with a transparent background." />
+    <VxPageHead title="OBS sources">
+      Browser sources for the stream. Add one to OBS as a browser source with a transparent background.
+    </VxPageHead>
     <LinkList :groups="groups" />
   </VxSiteShell>
 </template>
