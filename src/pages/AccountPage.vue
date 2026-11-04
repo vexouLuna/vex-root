@@ -31,7 +31,8 @@ watch(
 
 async function signOutEverywhere(): Promise<void> {
   busy.value = 'everywhere'
-  await account.signOut({ everywhere: true })
+  const done = await account.signOut({ everywhere: true })
+  if (!done) notice.value = { tone: 'error', text: "Couldn't sign you out. You're still signed in. Try again." }
   busy.value = null
 }
 
