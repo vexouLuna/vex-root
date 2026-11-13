@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Stream card: the live stream (links to Twitch) or, when offline, the latest VOD (links to it on vods.vexoul.net),
 // in the same layout. Both have a "watch past streams" button. A skeleton holds its place until the first answer;
-// hidden while the archive API can't be reached. Polls only while the tab is visible (usePoll), and the clocks tick once a second (useNow).
+// hidden if the very first fetch fails. A failed refresh keeps the last good data up, dimmed. Polls only while the tab is visible (usePoll), and the clocks tick once a second (useNow).
 // Offline, it also shows the next slot on the Twitch schedule (left out if there's none or Twitch can't be reached).
 import { VxButton, VxChip, VxNoThumbnail, VxPosters, VxSkeleton, VxStatusDot, formatDuration } from '@vex/ui'
 import { useNow, usePoll } from '@vex/ui/utils'
@@ -15,7 +15,8 @@ const REFRESH_MS = 60_000
 const SCHEDULE_MS = 15 * 60_000
 
 const stream = usePoll(fetchStreamCard, REFRESH_MS)
-const card = computed(() => (stream.error.value ? null : stream.data.value))
+const card = computed(() => stream.data.value)
+const stale = computed(() => !!stream.error.value)
 // The schedule is only asked for while offline: it loads when the card goes offline, then every SCHEDULE_MS.
 const offline = computed(() => card.value?.live === false)
 const schedule = usePoll(
@@ -65,7 +66,7 @@ const title = computed(() => card.value?.title ?? (card.value?.live ? 'Live on T
 
 <template>
   <VxSkeleton v-if="!stream.data.value && !stream.error.value" class="card placeholder" />
-  <article v-else-if="card" class="card vx-panel" :class="{ 'is-live': card.live }">
+  <article v-else-if="card" class="card vx-panel" :class="{ 'is-live': card.live, 'is-stale': stale }">
     <a :href="card.href" rel="noopener" class="main" :aria-label="`${card.live ? 'Live now' : 'Latest VOD'}: ${title}`">
       <div class="thumb">
         <img v-if="card.image && !broken" :src="card.image" alt="" decoding="async" @error="broken = true" />
@@ -100,6 +101,7 @@ const title = computed(() => card.value?.title ?? (card.value?.live ? 'Live on T
 .card { display: flex; flex-direction: column; overflow: hidden; width: 100%; max-width: 360px; }
 .placeholder { aspect-ratio: 360 / 300; }
 .card:has(.main:hover) { border-color: var(--vx-accent); }
+.card.is-stale { opacity: 0.7; }
 .card.is-live:has(.main:hover) { border-color: var(--vx-bad); }
 .main { display: flex; flex-direction: column; color: inherit; text-decoration: none; }
 .main:hover .title, .main:focus-visible .title { color: var(--vx-accent); }
