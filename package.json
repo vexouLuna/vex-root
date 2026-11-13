@@ -14,7 +14,7 @@
     "@vex/ui": "github:vexouLuna/vex-ui#v0.36.3",
     "@vex/vods-core": "github:vexouLuna/vods-core#v0.49.1",
     "vue": "^3.5.44",
-    "vue-router": "^4.6.4"
+    "vue-router": "^5.5.1"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
