@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <title>Terms of service · VOD archive</title>
+    <style>
+      /* Deep Field, simplified: vex-ui's tokens and type roles copied by hand, because a file in public/ can't
+         import @vex/ui. shortcut: no starfield, glass or bundled Geist; make it a real page in the app if these grow. */
+      :root {
+        --vx-bg: #000; --vx-ink: #f2f2f2; --vx-muted: #8b8b93; --vx-line: #26262c; --vx-accent: #d5e0ff;
+        --vx-font-sans: 'Geist Variable', 'Geist', system-ui, sans-serif;
+        --vx-font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, Consolas, monospace;
+        color-scheme: dark;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--vx-bg); color: var(--vx-ink); font: 15px/1.6 var(--vx-font-sans); }
+      header { height: 48px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--vx-line); font: 14px var(--vx-font-mono); }
+      main { max-width: 760px; margin: 0 auto; padding: 28px 20px 36px; }
+      h1, h2 {
+        font-family: var(--vx-font-mono); font-weight: 500; line-height: 1.15; margin: 0; padding-bottom: 0.08em;
+        background-image: linear-gradient(90deg, color-mix(in srgb, var(--vx-accent) 80%, #6a6a6a), color-mix(in srgb, var(--vx-accent) 35%, #fff) 70%);
+        background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; margin: 2.2em 0 0.5em; padding-top: 0.7em; border-top: 1px solid var(--vx-line); }
+      .eyebrow { font: 11px var(--vx-font-mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--vx-muted); }
+      a { color: inherit; text-decoration-color: var(--vx-muted); text-underline-offset: 3px; transition: color 0.15s; }
+      a:hover { color: var(--vx-accent); }
+      header a { text-decoration: none; }
+      code { font: 13px var(--vx-font-mono); overflow-wrap: anywhere; }
+      @media (max-width: 700px) { main { padding: 20px 16px 28px; } }
+    </style>
+  </head>
+  <body>
+    <header><a href="/">vexoul.net</a></header>
+    <main>
+      <h1>Terms of service</h1>
+      <p class="eyebrow">VOD archive · last updated 15 November 2026</p>
+
+      <p>These terms cover the VOD archive: the application that records a channel's Twitch broadcasts and uploads
+      them to that channel's YouTube account. It is run by vexouLuna and serves the archive sites that link to
+      this page. By connecting a YouTube channel to it you agree to these terms.</p>
+
+      <h2>What it does</h2>
+      <ul>
+        <li>It uploads the recordings of your broadcasts to the YouTube channel you connect, on your behalf, and
+          checks that the channel can still be uploaded to.</li>
+        <li>Connecting a channel is by arrangement with vexouLuna; the application is not open for anyone to
+          sign up to.</li>
+      </ul>
+
+      <h2>Your part</h2>
+      <ul>
+        <li>You connect only a channel you own or are allowed to manage.</li>
+        <li>The uploads are your content on your channel. You are responsible for having the rights to what is
+          in them.</li>
+        <li>The application uses the YouTube API Services, so by using it you also agree to the
+          <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>.</li>
+        <li>You can stop at any time by revoking access at
+          <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+      </ul>
+
+      <h2>No warranty</h2>
+      <p>The application is provided as is. It may change, stop, or fail to record or upload a broadcast, and
+      vexouLuna is not liable for a lost recording or upload.</p>
+
+      <h2>Privacy</h2>
+      <p>What data the application handles is in the <a href="/vod-archive/privacy.html">privacy policy</a>.</p>
+
+      <h2>Changes and contact</h2>
+      <p>These terms may change; the date above shows the last change. Questions: email
+      <a href="mailto:luna@vexoul.net">luna@vexoul.net</a>.</p>
+    </main>
+  </body>
+</html>
