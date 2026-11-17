@@ -209,10 +209,7 @@ const rows = computed(() => presets.value.map((p) => ({ name: p.name, url: urlOf
         <template v-else>Sign-in is not available here, so presets can't be saved.</template>
       </p>
 
-      <VxCallout v-if="error" tone="error">
-        {{ error }}
-        <template #actions><VxButton size="sm" variant="ghost" @click="error = ''">Dismiss</VxButton></template>
-      </VxCallout>
+      <VxCallout v-if="error" tone="error" dismissable @dismiss="error = ''">{{ error }}</VxCallout>
     </div>
   </section>
 </template>

@@ -91,7 +91,7 @@ async function forget(): Promise<void> {
         connection (you can also remove it under Connections in your Twitch settings). Signing in again
         starts a new, empty account.
       </VxCallout>
-      <VxCallout v-if="notice" :tone="notice.tone">{{ notice.text }}</VxCallout>
+      <VxCallout v-if="notice" :tone="notice.tone" dismissable @dismiss="notice = null">{{ notice.text }}</VxCallout>
 
       <div v-if="!account.ready.value" class="loading"><VxSpinner /></div>
 
