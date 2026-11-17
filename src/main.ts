@@ -7,6 +7,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import App from './App.vue'
+import { OVERLAYS } from './lib/overlays'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -14,8 +15,8 @@ const router = createRouter({
     { path: '/', component: () => import('./pages/LandingPage.vue'), meta: { title: 'Links' } },
     { path: '/account', component: () => import('./pages/AccountPage.vue'), meta: { title: 'Profile' } },
     { path: '/obs_sources', component: () => import('./pages/ObsSourcesPage.vue'), meta: { title: 'OBS sources' } },
-    // Browser source for OBS: transparent, no site chrome or starfield.
-    { path: '/obs_sources/countdown', component: () => import('./pages/CountdownPage.vue'), meta: { title: 'Countdown' } },
+    // Browser sources for OBS: transparent, no site chrome or starfield.
+    ...OVERLAYS.map((o) => ({ path: o.path, component: o.page, meta: { title: o.name } })),
     // Hands an https link over to an app link (obsidian://, …); see lib/redirect.
     { path: '/tools/httpsredirect', component: () => import('./pages/HttpsRedirectPage.vue'), meta: { title: 'Open app link' } },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('./pages/NotFoundPage.vue'), meta: { title: 'Not found' } },
