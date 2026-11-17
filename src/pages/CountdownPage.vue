@@ -4,14 +4,12 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import alarmUrl from '@/assets/alarm.mp3'
+import { useBrowserSource } from '@/lib/browserSource'
+import { OVERLAYS, overlayValues } from '@/lib/overlays'
 
-const route = useRoute()
-const num = (v: unknown) => {
-  const n = Number(Array.isArray(v) ? v[0] : v)
-  return Number.isFinite(n) && n > 0 ? n : 0
-}
-const text = String(route.query.text ?? '')
-const total = 3600 * num(route.query.h) + 60 * num(route.query.m) + num(route.query.s)
+// Its settings (h, m, s, text) are declared in lib/overlays, which also builds the form and the link.
+const { h, m, s, text } = overlayValues(OVERLAYS.find((o) => o.id === 'countdown')!, useRoute().query) as { h: number; m: number; s: number; text: string }
+const total = 3600 * h + 60 * m + s
 const end = Date.now() + total * 1000
 
 const shown = ref('0:00:00')
@@ -41,23 +39,14 @@ function run() {
   }
 }
 
-// A browser source needs a bare, see-through page (the library paints it black under a site shell).
-const saved = { html: '', body: '' }
+useBrowserSource()
 onMounted(() => {
-  saved.html = document.documentElement.style.cssText
-  saved.body = document.body.style.cssText
-  document.documentElement.style.background = 'transparent'
-  document.body.style.background = 'transparent'
-  document.body.style.margin = '0'
-  document.body.style.overflow = 'hidden'
   run()
   timer = setInterval(run, 500)
 })
 onUnmounted(() => {
   clearInterval(timer)
   audio?.pause()
-  document.documentElement.style.cssText = saved.html
-  document.body.style.cssText = saved.body
 })
 </script>
 

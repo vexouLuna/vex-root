@@ -87,7 +87,7 @@ async function forget(): Promise<void> {
       <VxPageHead title="Profile" />
 
       <VxCallout v-if="forgotten" tone="ok" title="You're forgotten">
-        Your vexoul.net sign-in, sessions and watch progress are deleted, and we asked Twitch to drop the
+        Your vexoul.net sign-in, sessions, watch progress and saved presets are deleted, and we asked Twitch to drop the
         connection (you can also remove it under Connections in your Twitch settings). Signing in again
         starts a new, empty account.
       </VxCallout>
@@ -148,7 +148,7 @@ async function forget(): Promise<void> {
             <div>
               <h2>Forget me</h2>
               <p class="vx-muted">
-                Deletes your vexoul.net sign-in, sessions and watch progress, and disconnects Twitch. Chat logs
+                Deletes your vexoul.net sign-in, sessions, watch progress and saved presets, and disconnects Twitch. Chat logs
                 and anything the doomtp bot keeps are not affected.
               </p>
             </div>
