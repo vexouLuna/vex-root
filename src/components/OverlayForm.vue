@@ -4,7 +4,21 @@
 import { VxButton, VxCallout, VxField, VxInput, VxSelect, VxSwitch, VxTable, useToast, type TableColumn } from '@vex/ui'
 import { useAccount } from '@vex/ui/account'
 import { computed, reactive, ref, watch } from 'vue'
-import { coerce, defaults, overlayUrl, sameValues, valuesFromUrl, type OverlayDef, type OverlayValues } from '@/lib/overlays'
+import FileField from '@/components/FileField.vue'
+import OptionListField from '@/components/OptionListField.vue'
+import {
+  LINK_MAX,
+  PRESET_PARAM,
+  coerce,
+  defaults,
+  overlayUrl,
+  presetUrl,
+  sameValues,
+  valuesFromUrl,
+  type OverlayDef,
+  type OverlayOption,
+  type OverlayValues,
+} from '@/lib/overlays'
 
 const props = defineProps<{ overlay: OverlayDef }>()
 const toast = useToast()
@@ -12,7 +26,7 @@ const toast = useToast()
 const values = reactive(defaults(props.overlay))
 const current = computed(() => coerce(props.overlay, (k) => values[k], 'empty'))
 const urlOf = (v: OverlayValues): string => overlayUrl(window.location.origin, props.overlay, v)
-const link = computed(() => urlOf(current.value))
+const fullLink = computed(() => urlOf(current.value))
 
 async function copy(url: string): Promise<void> {
   try {
@@ -26,10 +40,24 @@ async function copy(url: string): Promise<void> {
 const importing = ref(false)
 const pasted = ref('')
 const importError = ref('')
-function importLink(): void {
-  const found = valuesFromUrl(props.overlay, String(pasted.value))
+async function importLink(): Promise<void> {
+  let found = valuesFromUrl(props.overlay, String(pasted.value))
+  const publicId = found && new URL(String(pasted.value).trim()).searchParams.get(PRESET_PARAM)
+  if (publicId) {
+    // A preset's link: its settings are in vex-auth.
+    found = null
+    try {
+      const res = await fetch(`${account.base}/v2/public/presets/${encodeURIComponent(publicId)}`)
+      if (res.ok) {
+        const stored: { value: Record<string, unknown> } = await res.json()
+        found = coerce(props.overlay, (k) => stored.value[k], 'empty')
+      }
+    } catch {
+      // said below
+    }
+  }
   if (!found) {
-    importError.value = `That isn't a ${props.overlay.name} link.`
+    importError.value = publicId ? "That preset couldn't be loaded: it may have been deleted." : `That isn't a ${props.overlay.name} link.`
     return
   }
   Object.assign(values, found)
@@ -42,6 +70,7 @@ function importLink(): void {
 interface Preset {
   name: string
   value: OverlayValues
+  publicId: string
 }
 const account = useAccount()
 const user = account.user
@@ -73,9 +102,9 @@ watch(
     if (!u) return
     const res = await call(presetsPath, { headers: { Accept: 'application/json' } })
     if (!res) return
-    const items: { name: string; value: Record<string, unknown> }[] = (await res.json()).items ?? []
+    const items: { name: string; value: Record<string, unknown>; public_id: string }[] = (await res.json()).items ?? []
     // Whatever was stored, a preset here only ever holds this overlay's settings.
-    presets.value = items.map((p) => ({ name: p.name, value: coerce(props.overlay, (k) => p.value[k]) }))
+    presets.value = items.map((p) => ({ name: p.name, value: coerce(props.overlay, (k) => p.value[k]), publicId: p.public_id }))
   },
   { immediate: true },
 )
@@ -83,6 +112,11 @@ watch(
 const selectedPreset = computed(() => presets.value.find((p) => p.name === selected.value))
 /** The selected preset no longer holds what the form shows. */
 const changed = computed(() => !!selectedPreset.value && !sameValues(props.overlay, selectedPreset.value.value, current.value))
+/** A saved preset's short link, which follows its edits; else the link with every setting in it. */
+const link = computed(() =>
+  selectedPreset.value && !changed.value ? presetUrl(window.location.origin, props.overlay, selectedPreset.value.publicId) : fullLink.value,
+)
+const tooLong = computed(() => link.value.length > LINK_MAX)
 
 // Only picking one (or Revert) loads it: a save also selects its preset, and must not undo edits made meanwhile.
 function load(name: string | undefined): void {
@@ -104,9 +138,11 @@ async function save(): Promise<void> {
     body: JSON.stringify({ value }),
   })
   if (res) {
-    presets.value = [...presets.value.filter((p) => p.name !== name), { name, value }].sort((a, b) => a.name.localeCompare(b.name))
-    selected.value = name
-    toast.show(`Preset "${name}" saved`)
+    const saved: { name: string; public_id: string } = await res.json()
+    const preset = { name: saved.name, value, publicId: saved.public_id }
+    presets.value = [...presets.value.filter((p) => p.name !== saved.name), preset].sort((a, b) => a.name.localeCompare(b.name))
+    selected.value = saved.name
+    toast.show(`Preset "${saved.name}" saved`)
   }
   busy.value = null
 }
@@ -132,7 +168,7 @@ const COLUMNS: TableColumn[] = [
   { key: 'url', label: 'Link', mono: true, muted: true, wrap: true },
   { key: 'actions', label: '', align: 'right', nowrap: true },
 ]
-const rows = computed(() => presets.value.map((p) => ({ name: p.name, url: urlOf(p.value) })))
+const rows = computed(() => presets.value.map((p) => ({ name: p.name, url: presetUrl(window.location.origin, props.overlay, p.publicId) })))
 </script>
 
 <template>
@@ -145,14 +181,20 @@ const rows = computed(() => presets.value.map((p) => ({ name: p.name, url: urlOf
     <div class="vx-form-row">
       <VxField v-for="f in overlay.fields" :key="f.key" :label="f.label" :help="f.help" :class="`is-${f.type}`">
         <template #default="{ id }">
-          <VxSwitch v-if="f.type === 'toggle'" :id="id" v-model="values[f.key] as boolean" />
+          <OptionListField v-if="f.type === 'options'" :id="id" v-model="values[f.key] as OverlayOption[]" :images="f.images" :label="`${overlay.name} ${f.label}`" />
+          <FileField v-else-if="f.type === 'file'" :id="id" v-model="values[f.key] as string" :accept="f.accept" :label="f.label" />
+          <VxSwitch v-else-if="f.type === 'toggle'" :id="id" v-model="values[f.key] as boolean" />
           <VxSelect v-else-if="f.type === 'select'" :id="id" v-model="values[f.key] as string" :options="f.options" />
           <VxInput v-else :id="id" v-model="values[f.key] as string | number" :type="f.type" :placeholder="f.type === 'text' ? f.placeholder : undefined" />
         </template>
       </VxField>
     </div>
 
-    <VxField label="Link">
+    <VxField
+      :label="selectedPreset && !changed ? `Link to the preset “${selectedPreset.name}”` : 'Link'"
+      :help="selectedPreset && !changed ? 'Saving the preset again changes the source too: no need to paste a new link.' : undefined"
+      :error="tooLong ? (user ? 'This link is very long: save these settings as a preset for a short one.' : 'This link is very long: sign in and save these settings as a preset for a short one.') : undefined"
+    >
       <template #default="{ id }">
         <div class="vx-form-row">
           <VxInput :id="id" :model-value="link" mono grow :width="240" readonly @focus="($event.target as HTMLInputElement).select()" />
@@ -221,6 +263,8 @@ h2 { margin: 0 0 2px; font-size: 17px; font-weight: 600; color: var(--vx-ink); }
 .small a { color: var(--vx-accent); }
 .is-number { flex: 0 1 96px; }
 .is-text { flex: 1 1 220px; }
+.is-options { flex: 1 1 100%; }
+.is-file { flex: 1 1 280px; }
 .presets { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--vx-line); }
 .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--vx-ctl-sm); }
 /* The library styles a page's h3 as an accented doc heading; here it is a panel's eyebrow. */

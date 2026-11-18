@@ -3,6 +3,7 @@ import { VxAccount, VxAvatar, VxButton, VxCallout, VxConfirm, VxEmptyState, VxPa
 import { useAccount } from '@vex/ui/account'
 import { ref, watch } from 'vue'
 import { memberSince, reconnectUrl } from '@/lib/account'
+import { useFiles } from '@/lib/files'
 
 const account = useAccount()
 const user = account.user
@@ -12,6 +13,12 @@ const notice = ref<{ tone: 'ok' | 'error'; text: string } | null>(null)
 const clearing = ref(false)
 const forgetting = ref(false)
 const forgotten = ref(false)
+const files = useFiles()
+const mb = (bytes: number): string => `${(bytes / 1024 / 1024).toFixed(1)} MB`
+
+async function deleteFile(id: string, name: string): Promise<void> {
+  if (!(await files.remove(id))) notice.value = { tone: 'error', text: `Couldn't delete "${name}". Try again.` }
+}
 
 watch(
   user,
@@ -87,7 +94,7 @@ async function forget(): Promise<void> {
       <VxPageHead title="Profile" />
 
       <VxCallout v-if="forgotten" tone="ok" title="You're forgotten">
-        Your vexoul.net sign-in, sessions, watch progress and saved presets are deleted, and we asked Twitch to drop the
+        Your vexoul.net sign-in, sessions, watch progress, saved presets and uploaded files are deleted, and we asked Twitch to drop the
         connection (you can also remove it under Connections in your Twitch settings). Signing in again
         starts a new, empty account.
       </VxCallout>
@@ -143,12 +150,32 @@ async function forget(): Promise<void> {
           </div>
         </section>
 
+        <section class="rows vx-panel">
+          <div class="row">
+            <div>
+              <h2>Overlay files</h2>
+              <p class="vx-muted">
+                Sounds and images you uploaded for the OBS sources: {{ mb(files.usedBytes.value) }} of {{ mb(files.maxBytes.value || 50 * 1024 * 1024) }}.
+                Anyone with a source's link can open them. Deleting one takes it out of every source that uses it.
+              </p>
+            </div>
+          </div>
+          <ul v-if="files.list.value.length" class="files">
+            <li v-for="f in files.list.value" :key="f.id">
+              <span class="file-name">{{ f.name }}</span>
+              <span class="vx-muted vx-mono">{{ f.content_type }} · {{ mb(f.size_bytes) }}</span>
+              <VxButton size="sm" variant="ghost" @click="deleteFile(f.id, f.name)">Delete</VxButton>
+            </li>
+          </ul>
+          <p v-else class="vx-muted none">None uploaded.</p>
+        </section>
+
         <section class="rows danger vx-panel">
           <div class="row">
             <div>
               <h2>Forget me</h2>
               <p class="vx-muted">
-                Deletes your vexoul.net sign-in, sessions, watch progress and saved presets, and disconnects Twitch. Chat logs
+                Deletes your vexoul.net sign-in, sessions, watch progress, saved presets and uploaded files, and disconnects Twitch. Chat logs
                 and anything the doomtp bot keeps are not affected.
               </p>
             </div>
@@ -201,6 +228,10 @@ async function forget(): Promise<void> {
 .row h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
 .row p { margin: 0; font-size: 13px; line-height: 1.5; }
 .row > :deep(.vx-btn) { flex: none; }
+.files { list-style: none; margin: 0; padding: 0 0 12px; display: grid; gap: 4px; }
+.files li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 13px; }
+.file-name { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; color: var(--vx-ink); }
+.none { margin: 0; padding: 0 0 16px; font-size: 13px; }
 .danger { border-color: var(--vx-bad); }
 .danger h2 { color: var(--vx-bad); }
 @container vx-site (max-width: 700px) {

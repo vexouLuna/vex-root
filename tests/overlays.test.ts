@@ -13,7 +13,7 @@ describe('OVERLAYS', () => {
 
 describe('overlayUrl', () => {
   it('leaves out zero and empty settings', () => {
-    expect(overlayUrl(origin, countdown, defaults(countdown))).toBe('https://vexoul.net/obs_sources/countdown?m=5')
+    expect(overlayUrl(origin, countdown, defaults(countdown))).toBe('https://vexoul.net/obs_sources/countdown?m=5&vol=10')
     expect(overlayUrl(origin, countdown, { h: 0, m: 0, s: 0, text: '' })).toBe('https://vexoul.net/obs_sources/countdown')
   })
 
@@ -25,12 +25,12 @@ describe('overlayUrl', () => {
 
 describe('valuesFromUrl', () => {
   it('reads back what overlayUrl wrote', () => {
-    const values = { h: 1, m: 0, s: 30, text: 'starting soon?' }
+    const values = { h: 1, m: 0, s: 30, text: 'starting soon?', sound: 'https://example.com/ding.mp3', vol: 50 }
     expect(valuesFromUrl(countdown, overlayUrl(origin, countdown, values))).toEqual(values)
   })
 
   it('ignores unknown settings and reads a broken number as zero', () => {
-    expect(valuesFromUrl(countdown, ' https://vexoul.net/obs_sources/countdown/?m=abc&x=1 ')).toEqual({ h: 0, m: 0, s: 0, text: '' })
+    expect(valuesFromUrl(countdown, ' https://vexoul.net/obs_sources/countdown/?m=abc&x=1 ')).toEqual({ h: 0, m: 0, s: 0, text: '', sound: '', vol: 0 })
   })
 
   it('refuses what is not a link to this overlay', () => {
