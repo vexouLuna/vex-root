@@ -2,7 +2,7 @@
 
 # vex-root
 
-vexoul.net: links, socials, stream status and the OBS browser sources (countdown), on the shared
+vexoul.net: links, socials, stream status and the OBS browser sources (countdown, wheel, case opening, card draw), on the shared
 `@vex/ui` design. Published by `publish.yml` to the `deploy` branch.
 
 - The OBS sources (`/obs_sources/...`) are transparent and have no site chrome; keep them that way.
