@@ -14,7 +14,7 @@ const clearing = ref(false)
 const forgetting = ref(false)
 const forgotten = ref(false)
 const files = useFiles()
-const mb = (bytes: number): string => `${(bytes / 1024 / 1024).toFixed(1)} MB`
+const mb = (bytes: number): string => (bytes < 1024 * 1024 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`)
 
 async function deleteFile(id: string, name: string): Promise<void> {
   if (!(await files.remove(id))) notice.value = { tone: 'error', text: `Couldn't delete "${name}". Try again.` }

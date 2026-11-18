@@ -18,6 +18,8 @@ const WINNER = 52 // where the pick sits on it, with a few after it so the strip
 const { values, error, fileSrc } = useOverlayValues('case')
 const { settings, active, result, busy, removed, canRemove, draw, remove, reset } = useDraw(values, fileSrc)
 const caseImage = computed(() => fileSrc((values.value?.img as string | undefined) ?? ''))
+/** Pictures that didn't load (deleted since, or a dead link): drawn as placeholders. */
+const failed = ref(new Set<string>())
 
 /** Rarity by the weights of all the options in the settings, so removing one doesn't recolour the rest. */
 const colorOf = computed(() => {
@@ -63,7 +65,7 @@ useBrowserSource()
     <p v-else-if="settings && !active.length" class="msg">No items left{{ removed ? ': press Reset' : '' }}.</p>
     <template v-else-if="settings">
       <button v-if="!opened" class="case" type="button" aria-label="Open the case" @click="open">
-        <img v-if="caseImage" :src="caseImage" alt="" />
+        <img v-if="caseImage && !failed.has(caseImage)" :src="caseImage" alt="" @error="failed.add(caseImage)" />
         <VxPlaceholder v-else label="case" :w="260" :h="180" />
       </button>
       <div v-else class="reel-box">
@@ -79,7 +81,7 @@ useBrowserSource()
             :class="{ won: picked && i === WINNER }"
             :style="{ width: `${card}px`, '--tier': colorOf.get(o) }"
           >
-            <img v-if="o.image" :src="fileSrc(o.image)" alt="" />
+            <img v-if="o.image && !failed.has(o.image)" :src="fileSrc(o.image)" alt="" @error="failed.add(o.image)" />
             <VxPlaceholder v-else :label="o.name.slice(0, 2).toLowerCase()" :w="card - 24" :h="Math.round((card - 24) * 0.7)" />
             <span class="name">{{ o.name }}</span>
           </li>

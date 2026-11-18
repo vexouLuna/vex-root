@@ -82,6 +82,7 @@ function save(): void {
           />
           <VxButton v-if="o.color" size="sm" variant="ghost" icon label="Default colour" @click="patch(i, { color: undefined })">×</VxButton>
         </span>
+        <VxButton size="sm" variant="ghost" icon :label="`Remove ${o.name}`" @click="drop(i)">−</VxButton>
         <FileField
           v-if="images"
           class="image"
@@ -90,7 +91,6 @@ function save(): void {
           :model-value="o.image ?? ''"
           @update:model-value="patch(i, { image: $event || undefined })"
         />
-        <VxButton size="sm" variant="ghost" icon :label="`Remove ${o.name}`" @click="drop(i)">−</VxButton>
       </li>
     </ol>
     <p v-if="!model.length" class="vx-muted small">No options yet.</p>
@@ -114,7 +114,8 @@ function save(): void {
 .color { display: inline-flex; align-items: center; gap: 2px; }
 .color input { width: 32px; height: var(--vx-ctl-sm); padding: 0 2px; border: 1px solid var(--vx-line); border-radius: var(--vx-radius-sm); background: transparent; cursor: pointer; }
 .color input.unset { opacity: 0.35; }
-.image { flex: 1 1 220px; }
+/* The picture takes a line of its own under the rest of its option. */
+.image { flex: 1 1 100%; }
 .hidden { display: none; }
 .small { font-size: 12px; margin: 0; }
 .err { margin: 0; font-size: 12px; color: var(--vx-bad); }
