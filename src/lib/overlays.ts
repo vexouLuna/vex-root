@@ -57,6 +57,23 @@ export const LINK_MAX = 2000
 export const PRESET_PARAM = 'p'
 
 const VOLUME = (fallback: number): OverlayField => ({ key: 'vol', label: 'Volume %', type: 'number', default: fallback, max: 100 })
+const SAMPLE: OverlayOption[] = [
+  { name: 'Yes', weight: 1 },
+  { name: 'No', weight: 1 },
+  { name: 'Maybe', weight: 1 },
+]
+/** What the wheel, the case and the cards share: the options, how long a spin lasts, its sounds and Remove. */
+const RANDOM_FIELDS = (images: boolean): OverlayField[] => [
+  { key: 'o', label: 'Options', type: 'options', default: SAMPLE, images, help: 'An option comes up as often as its weight says, against the others.' },
+  { key: 't', label: 'Spin seconds', type: 'number', default: 5 },
+  // At random, so no two spins last the same.
+  { key: 'j', label: '± seconds', type: 'number', default: 1 },
+  { key: 'spin', label: 'Sound while spinning', type: 'file', accept: 'audio', default: '' },
+  { key: 'done', label: 'Sound at the result', type: 'file', accept: 'audio', default: '' },
+  VOLUME(50),
+  { key: 'rm', label: 'Offer Remove', type: 'toggle', default: true, help: 'After a result: drop it for the next spins.' },
+]
+const CONTROLS_NOTE = 'Spin with the buttons under it: make the source 40px taller than you want to show, crop that off the bottom, and use OBS’s Interact window.'
 
 export const OVERLAYS: OverlayDef[] = [
   {
@@ -73,6 +90,14 @@ export const OVERLAYS: OverlayDef[] = [
       { key: 'sound', label: 'Sound at zero', type: 'file', accept: 'audio', default: '', help: 'Left empty: the quiet alarm.' },
       VOLUME(10),
     ],
+  },
+  {
+    id: 'wheel',
+    name: 'Wheel of luck',
+    about: `A wheel with a slice per option, as big as its weight. ${CONTROLS_NOTE}`,
+    path: '/obs_sources/wheel',
+    page: () => import('@/pages/WheelPage.vue'),
+    fields: RANDOM_FIELDS(false),
   },
 ]
 
