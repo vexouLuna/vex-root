@@ -107,6 +107,14 @@ export const OVERLAYS: OverlayDef[] = [
     page: () => import('@/pages/CasePage.vue'),
     fields: [{ key: 'img', label: 'Case picture', type: 'file', accept: 'image', default: '' }, ...RANDOM_FIELDS(true)],
   },
+  {
+    id: 'cards',
+    name: 'Card draw',
+    about: `A deck that shuffles for the spin time, then turns over one card, a weighted pick. Each option's picture is its card's face; the back is one picture for the deck. ${CONTROLS_NOTE}`,
+    path: '/obs_sources/cards',
+    page: () => import('@/pages/CardsPage.vue'),
+    fields: [{ key: 'back', label: 'Card back', type: 'file', accept: 'image', default: '' }, ...RANDOM_FIELDS(true)],
+  },
 ]
 
 const FILE_ID = /^[A-Za-z0-9_-]{16,64}$/
