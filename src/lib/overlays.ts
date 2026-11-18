@@ -137,7 +137,7 @@ export const OVERLAYS: OverlayDef[] = [
       { key: 'color', label: 'Name colour', type: 'text', default: '', placeholder: 'rrggbb', pattern: /^#?[0-9a-f]{6}$/i, help: 'Empty: each chatter’s own colour. Else one colour for every name, like ff8800.' },
       { key: 'names', label: 'Names', type: 'select', default: 'display', options: [{ value: 'display', label: 'Display name' }, { value: 'login', label: 'Login' }, { value: 'both', label: 'Both, when they differ' }] },
       { key: 'badges', label: 'Badges', type: 'select', default: 'on', options: [{ value: 'on', label: 'Shown' }, { value: 'off', label: 'Hidden' }] },
-      { key: 'pronouns', label: 'Pronouns', type: 'toggle', default: false, help: 'Asks pronouns.alejo.io (the Twitch Chat Pronouns service) for each chatter’s pronouns: it receives their Twitch login from the browser OBS runs. Off sends nothing.' },
+      { key: 'pronouns', label: 'Pronouns', type: 'toggle', default: false, help: 'Shows each chatter’s pronouns, as the Twitch Chat Pronouns extension has them. The overlay asks the bot, which asks the pronouns service; chatters’ Twitch logins go to the bot only. Off asks nothing.' },
       { key: 'lines', label: 'Most lines', type: 'number', default: 20, max: 100 },
       { key: 'fade', label: 'Fade after (seconds)', type: 'number', default: 0, max: 3600, help: '0: lines stay until newer ones push them off. Else at least 5.' },
       { key: 'history', label: 'Start with (lines)', type: 'number', default: 0, max: 100, help: 'Recent lines from the chat log, shown at the start.' },
