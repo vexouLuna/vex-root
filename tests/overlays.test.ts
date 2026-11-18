@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { OVERLAYS, defaults, overlayUrl, overlayValues, sameValues, valuesFromUrl, type OverlayDef } from '../src/lib/overlays'
+import { OVERLAYS, defaults, overlayUrl, overlayValues, presetUrl, sameValues, valuesFromUrl, type OverlayDef } from '../src/lib/overlays'
 
 const countdown = OVERLAYS.find((o) => o.id === 'countdown')!
 const origin = 'https://vexoul.net'
@@ -86,5 +86,38 @@ describe('toggle and select settings', () => {
   it('compares settings by the fields of the overlay only', () => {
     expect(sameValues(sample, { big: true, side: 'left', n: 1, stray: 1 }, { big: true, side: 'left', n: 1 })).toBe(true)
     expect(sameValues(sample, { big: true, side: 'left', n: 1 }, { big: false, side: 'left', n: 1 })).toBe(false)
+  })
+})
+
+// An overlay whose page is on another site (the chat overlay, on dtp): the channel is in the path, the rest in the query.
+describe('the chat overlay', () => {
+  const chat = OVERLAYS.find((o) => o.id === 'chat')!
+  const link = (v: Record<string, string | number | boolean>) => overlayUrl(origin, chat, { ...defaults(chat), ...v })
+
+  it('has no page here and points at dtp, not at this site', () => {
+    expect(chat.page).toBeUndefined()
+    expect(chat.base).toMatch(/^https:\/\/dtp\./)
+    expect(link({ login: 'vexouluna' }).startsWith(`${chat.base}/overlay/vexouluna`)).toBe(true)
+  })
+  it('makes no link until there is a channel, and tidies the login', () => {
+    expect(link({})).toBe('')
+    expect(link({ login: 'not a login!' })).toBe('')
+    expect(link({ login: '  VexouLuna ' })).toBe(`${chat.base}/overlay/vexouluna?size=24&lines=20`)
+  })
+  it('carries the settings, leaving out what a link leaves out', () => {
+    const q = new URL(link({ login: 'a', size: 40, emote: 64, color: 'FF8800', names: 'both', badges: 'off', pronouns: true, fade: 30, history: 5, notices: true, hidecommands: true, shadow: 'off' })).searchParams
+    expect(Object.fromEntries(q)).toEqual({ size: '40', emote: '64', color: 'FF8800', names: 'both', badges: 'off', pronouns: '1', lines: '20', fade: '30', history: '5', notices: '1', hidecommands: '1', shadow: 'off' })
+  })
+  it('reads its own link back, the channel included', () => {
+    const values = { ...defaults(chat), login: 'vexouluna', size: 40, pronouns: true, badges: 'off' }
+    expect(valuesFromUrl(chat, overlayUrl(origin, chat, values))).toEqual({ ...values, color: '' })
+    expect(valuesFromUrl(chat, 'https://dtp.vexoul.net/overlay/')).toBeNull()
+    expect(valuesFromUrl(chat, 'https://vexoul.net/obs_sources/wheel')).toBeNull()
+  })
+  it('keeps presets working: its link carries the preset and the channel', () => {
+    const url = presetUrl(origin, chat, 'abc123', { login: 'vexouluna' })
+    expect(url).toBe(`${chat.base}/overlay/vexouluna?p=abc123`)
+    expect(presetUrl(origin, chat, 'abc123', {})).toBe('')
+    expect(presetUrl(origin, countdown, 'abc123')).toBe('https://vexoul.net/obs_sources/countdown?p=abc123')
   })
 })

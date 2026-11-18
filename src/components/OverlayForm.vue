@@ -114,7 +114,7 @@ const selectedPreset = computed(() => presets.value.find((p) => p.name === selec
 const changed = computed(() => !!selectedPreset.value && !sameValues(props.overlay, selectedPreset.value.value, current.value))
 /** A saved preset's short link, which follows its edits; else the link with every setting in it. */
 const link = computed(() =>
-  selectedPreset.value && !changed.value ? presetUrl(window.location.origin, props.overlay, selectedPreset.value.publicId) : fullLink.value,
+  selectedPreset.value && !changed.value ? presetUrl(window.location.origin, props.overlay, selectedPreset.value.publicId, selectedPreset.value.value) : fullLink.value,
 )
 const tooLong = computed(() => link.value.length > LINK_MAX)
 
@@ -168,7 +168,7 @@ const COLUMNS: TableColumn[] = [
   { key: 'url', label: 'Link', mono: true, muted: true, wrap: true },
   { key: 'actions', label: '', align: 'right', nowrap: true },
 ]
-const rows = computed(() => presets.value.map((p) => ({ name: p.name, url: presetUrl(window.location.origin, props.overlay, p.publicId) })))
+const rows = computed(() => presets.value.map((p) => ({ name: p.name, url: presetUrl(window.location.origin, props.overlay, p.publicId, p.value) })))
 </script>
 
 <template>
@@ -192,14 +192,14 @@ const rows = computed(() => presets.value.map((p) => ({ name: p.name, url: prese
 
     <VxField
       :label="selectedPreset && !changed ? `Link to the preset “${selectedPreset.name}”` : 'Link'"
-      :help="selectedPreset && !changed ? 'Saving the preset again changes the source too: no need to paste a new link.' : undefined"
+      :help="!link ? 'Fill in the required setting above to get the link.' : selectedPreset && !changed ? 'Saving the preset again changes the source too: no need to paste a new link.' : undefined"
       :error="tooLong ? (user ? 'This link is very long: save these settings as a preset for a short one.' : 'This link is very long: sign in and save these settings as a preset for a short one.') : undefined"
     >
       <template #default="{ id }">
         <div class="vx-form-row">
           <VxInput :id="id" :model-value="link" mono grow :width="240" readonly @focus="($event.target as HTMLInputElement).select()" />
-          <VxButton variant="primary" @click="copy(link)">Copy</VxButton>
-          <VxButton :href="link" external>Open</VxButton>
+          <VxButton variant="primary" :disabled="!link" @click="copy(link)">Copy</VxButton>
+          <VxButton :href="link || undefined" :disabled="!link" external>Open</VxButton>
           <VxButton :pressed="importing" @click="importing = !importing">Import link</VxButton>
         </div>
       </template>
