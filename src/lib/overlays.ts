@@ -25,7 +25,8 @@ interface FieldBase {
   help?: string
 }
 export type OverlayField =
-  | (FieldBase & { type: 'number'; default: number; max?: number })
+  /** `empty` is what a link without it means (0 if not given): set it when 0 must stay a choice of its own. */
+  | (FieldBase & { type: 'number'; default: number; max?: number; empty?: number })
   | (FieldBase & { type: 'text'; default: string; placeholder?: string })
   | (FieldBase & { type: 'toggle'; default: boolean })
   /** Its first option is the one a link leaves out. */
@@ -56,7 +57,8 @@ export const LINK_MAX = 2000
 /** The query parameter a preset link carries its public id in. No field may use it. */
 export const PRESET_PARAM = 'p'
 
-const VOLUME = (fallback: number): OverlayField => ({ key: 'vol', label: 'Volume %', type: 'number', default: fallback, max: 100 })
+// A link without a volume plays at the default (links made before the setting existed included); 0 is mute.
+const VOLUME = (fallback: number): OverlayField => ({ key: 'vol', label: 'Volume %', type: 'number', default: fallback, max: 100, empty: fallback })
 const SAMPLE: OverlayOption[] = [
   { name: 'Yes', weight: 1 },
   { name: 'No', weight: 1 },
@@ -177,7 +179,7 @@ export function importOptions(text: string): { options: OverlayOption[] } | { er
 
 /** What a setting is when a link doesn't carry it. */
 function empty(f: OverlayField): OverlayValue {
-  if (f.type === 'number') return 0
+  if (f.type === 'number') return f.empty ?? 0
   if (f.type === 'toggle') return false
   if (f.type === 'options') return []
   return f.type === 'select' ? (f.options[0]?.value ?? '') : ''
