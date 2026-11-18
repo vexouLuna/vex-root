@@ -57,6 +57,7 @@ export const LINK_GROUPS: LinkGroup[] = [
       { name: 'GitHub', icon: 'github', handle: 'github/vexouluna', href: 'https://github.com/vexouLuna' },
       STATUS_LINK,
       DTP_LINK,
+      { name: 'Overlays', handle: 'vexoul.net/obs_sources', href: 'https://vexoul.net/obs_sources' },
     ],
   },
   {

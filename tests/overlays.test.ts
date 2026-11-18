@@ -23,14 +23,28 @@ describe('overlayUrl', () => {
   })
 })
 
+describe('the volume', () => {
+  it('is the old 10% on a link without it, such as one made before the setting', () => {
+    expect(overlayValues(countdown, new URLSearchParams('m=5')).vol).toBe(10)
+    expect(overlayValues(countdown, {}).vol).toBe(10)
+  })
+
+  it('keeps 0 as mute through a link, and leaves the default out', () => {
+    const muted = overlayUrl(origin, countdown, { ...defaults(countdown), vol: 0 })
+    expect(new URL(muted).searchParams.get('vol')).toBe('0')
+    expect(valuesFromUrl(countdown, muted)?.vol).toBe(0)
+    expect(new URL(overlayUrl(origin, countdown, defaults(countdown))).searchParams.has('vol')).toBe(false)
+  })
+})
+
 describe('valuesFromUrl', () => {
   it('reads back what overlayUrl wrote', () => {
-    const values = { h: 1, m: 0, s: 30, text: 'starting soon?' }
+    const values = { h: 1, m: 0, s: 30, text: 'starting soon?', sound: 'https://example.com/ding.mp3', vol: 50 }
     expect(valuesFromUrl(countdown, overlayUrl(origin, countdown, values))).toEqual(values)
   })
 
   it('ignores unknown settings and reads a broken number as zero', () => {
-    expect(valuesFromUrl(countdown, ' https://vexoul.net/obs_sources/countdown/?m=abc&x=1 ')).toEqual({ h: 0, m: 0, s: 0, text: '' })
+    expect(valuesFromUrl(countdown, ' https://vexoul.net/obs_sources/countdown/?m=abc&x=1 ')).toEqual({ h: 0, m: 0, s: 0, text: '', sound: '', vol: 10 })
   })
 
   it('refuses what is not a link to this overlay', () => {
