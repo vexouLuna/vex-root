@@ -91,8 +91,8 @@ describe('the chat overlay', () => {
     expect(link({ login: '  VexouLuna ' })).toBe(`${chat.base}/overlay/vexouluna?size=24&lines=20`)
   })
   it('carries the settings, leaving out what a link leaves out', () => {
-    const q = new URL(link({ login: 'a', size: 40, emote: 64, color: 'FF8800', names: 'both', badges: 'off', pronouns: true, fade: 30, history: 5, notices: true, commands: true, shadow: 'off' })).searchParams
-    expect(Object.fromEntries(q)).toEqual({ size: '40', emote: '64', color: 'FF8800', names: 'both', badges: 'off', pronouns: '1', lines: '20', fade: '30', history: '5', notices: '1', commands: '1', shadow: 'off' })
+    const q = new URL(link({ login: 'a', size: 40, emote: 64, color: 'FF8800', names: 'both', badges: 'off', pronouns: true, fade: 30, history: 5, notices: true, hidecommands: true, shadow: 'off' })).searchParams
+    expect(Object.fromEntries(q)).toEqual({ size: '40', emote: '64', color: 'FF8800', names: 'both', badges: 'off', pronouns: '1', lines: '20', fade: '30', history: '5', notices: '1', hidecommands: '1', shadow: 'off' })
   })
   it('reads its own link back, the channel included', () => {
     const values = { ...defaults(chat), login: 'vexouluna', size: 40, pronouns: true, badges: 'off' }

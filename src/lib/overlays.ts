@@ -140,7 +140,7 @@ export const OVERLAYS: OverlayDef[] = [
       { key: 'fade', label: 'Fade after (seconds)', type: 'number', default: 0, max: 3600, help: '0: lines stay until newer ones push them off. Else at least 5.' },
       { key: 'history', label: 'Start with (lines)', type: 'number', default: 0, max: 100, help: 'Recent lines from the chat log, shown at the start.' },
       { key: 'notices', label: 'Subs, raids and the like', type: 'toggle', default: false },
-      { key: 'commands', label: 'Commands', type: 'toggle', default: false, help: 'Show messages that are commands, like !so someone.' },
+      { key: 'hidecommands', label: 'Hide commands', type: 'toggle', default: false, help: 'Leave out messages that are commands, like !so someone.' },
       { key: 'shadow', label: 'Text shadow', type: 'select', default: 'on', options: [{ value: 'on', label: 'On' }, { value: 'off', label: 'Off' }] },
     ],
   },
