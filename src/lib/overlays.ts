@@ -5,6 +5,7 @@
 // one entry to OVERLAYS. A setting left out of a link means its field's "empty" value (see empty()), so the page
 // must treat a missing setting as that. A link may instead carry a saved preset's public id (`?p=`), which the
 // page reads from vex-auth: that is how settings too big for a link (an option list) reach OBS.
+import { siteInfo } from '@vex/ui'
 import type { Component } from 'vue'
 
 /** One entry of an option list (a wheel's slices, a case's items, a deck's cards). */
@@ -26,7 +27,8 @@ interface FieldBase {
 }
 export type OverlayField =
   | (FieldBase & { type: 'number'; default: number; max?: number })
-  | (FieldBase & { type: 'text'; default: string; placeholder?: string })
+  /** `pattern`: what a valid value looks like (anything else counts as not set); `lower`: it is lowercased first. */
+  | (FieldBase & { type: 'text'; default: string; placeholder?: string; pattern?: RegExp; lower?: boolean })
   | (FieldBase & { type: 'toggle'; default: boolean })
   /** Its first option is the one a link leaves out. */
   | (FieldBase & { type: 'select'; default: string; options: { value: string; label: string }[] })
@@ -40,8 +42,13 @@ export interface OverlayDef {
   id: string
   name: string
   about: string
+  /** Where its page is. `{key}` stands for a text field's value (an overlay of one channel): that field is part of
+   *  the path, not of the query, and the link is not made until it is set. */
   path: string
-  page: () => Promise<{ default: Component }>
+  /** The page when it lives in this site; left out, the overlay's page is on another site, at `base`. */
+  page?: () => Promise<{ default: Component }>
+  /** The origin its page is on when that is another site (`siteInfo(...).href`); no route is made here. */
+  base?: string
   fields: OverlayField[]
 }
 
@@ -114,6 +121,28 @@ export const OVERLAYS: OverlayDef[] = [
     path: '/obs_sources/cards',
     page: () => import('@/pages/CardsPage.vue'),
     fields: [{ key: 'back', label: 'Card back', type: 'file', accept: 'image', default: '' }, ...RANDOM_FIELDS(true)],
+  },
+  {
+    id: 'chat',
+    name: 'Chat',
+    about: 'The channel’s chat as it is said, over your stream, with its emotes, badges and name colours. A deleted message, a timed-out chatter’s messages and a cleared chat disappear. Needs the bot in the channel, with its public chat log on. The page lives on dtp.vexoul.net.',
+    path: '/overlay/{login}',
+    base: siteInfo('dtp').href,
+    fields: [
+      { key: 'login', label: 'Channel', type: 'text', default: '', placeholder: 'twitch login', pattern: /^[a-z0-9_]{1,25}$/, lower: true, help: 'The channel’s Twitch login.' },
+      { key: 'size', label: 'Text size (px)', type: 'number', default: 24, max: 96, help: '12 to 96.' },
+      { key: 'emote', label: 'Emote size (px)', type: 'number', default: 0, max: 192, help: '0: a little over the text.' },
+      { key: 'color', label: 'Name colour', type: 'text', default: '', placeholder: 'rrggbb', pattern: /^#?[0-9a-f]{6}$/i, help: 'Empty: each chatter’s own colour. Else one colour for every name, like ff8800.' },
+      { key: 'names', label: 'Names', type: 'select', default: 'display', options: [{ value: 'display', label: 'Display name' }, { value: 'login', label: 'Login' }, { value: 'both', label: 'Both, when they differ' }] },
+      { key: 'badges', label: 'Badges', type: 'select', default: 'on', options: [{ value: 'on', label: 'Shown' }, { value: 'off', label: 'Hidden' }] },
+      { key: 'pronouns', label: 'Pronouns', type: 'toggle', default: false, help: 'Asks pronouns.alejo.io (the Twitch Chat Pronouns service) for each chatter’s pronouns: it receives their Twitch login from the browser OBS runs. Off sends nothing.' },
+      { key: 'lines', label: 'Most lines', type: 'number', default: 20, max: 100 },
+      { key: 'fade', label: 'Fade after (seconds)', type: 'number', default: 0, max: 3600, help: '0: lines stay until newer ones push them off. Else at least 5.' },
+      { key: 'history', label: 'Start with (lines)', type: 'number', default: 0, max: 100, help: 'Recent lines from the chat log, shown at the start.' },
+      { key: 'notices', label: 'Subs, raids and the like', type: 'toggle', default: false },
+      { key: 'commands', label: 'Commands', type: 'toggle', default: false, help: 'Show messages that are commands, like !so someone.' },
+      { key: 'shadow', label: 'Text shadow', type: 'select', default: 'on', options: [{ value: 'on', label: 'On' }, { value: 'off', label: 'Off' }] },
+    ],
   },
 ]
 
@@ -195,6 +224,10 @@ function parse(f: OverlayField, raw: unknown): OverlayValue | undefined {
   if (f.type === 'options') return parseOptions(raw)
   if (typeof raw !== 'string') return undefined
   if (f.type === 'file') return raw === '' || isFileRef(raw) ? raw : undefined
+  if (f.type === 'text' && f.pattern) {
+    const text = f.lower ? raw.trim().toLowerCase() : raw.trim()
+    return text === '' || f.pattern.test(text) ? text : undefined
+  }
   return f.type === 'select' && !f.options.some((o) => o.value === raw) ? undefined : raw
 }
 
@@ -217,23 +250,45 @@ export function queryParam(query: URLSearchParams | Record<string, unknown>, key
   return Array.isArray(v) ? v[0] : v
 }
 
-/** The browser-source link. Settings at their empty value are left out. */
+const PLACEHOLDER = /\{(\w+)\}/g
+/** The keys a path takes from the settings. */
+const pathKeys = (def: OverlayDef): string[] => [...def.path.matchAll(PLACEHOLDER)].map((m) => m[1]!)
+
+/** The overlay's path with its settings in it, or null while one of them is not set. */
+function pathFor(def: OverlayDef, values: OverlayValues): string | null {
+  let missing = false
+  const path = def.path.replace(PLACEHOLDER, (_, k: string) => {
+    const v = String(values[k] ?? '')
+    if (!v) missing = true
+    return encodeURIComponent(v)
+  })
+  return missing ? null : path
+}
+
+/** The browser-source link, or '' while a setting its path needs is not set. Settings at their empty value are left out. */
 export function overlayUrl(origin: string, def: OverlayDef, values: OverlayValues): string {
   const clean = coerce(def, (k) => values[k], 'empty')
+  const path = pathFor(def, clean)
+  if (path === null) return ''
+  const inPath = pathKeys(def)
   const query = new URLSearchParams()
   for (const f of def.fields) {
+    if (inPath.includes(f.key)) continue
     const v = clean[f.key]
     if (Array.isArray(v)) {
       if (v.length) query.set(f.key, JSON.stringify(v))
     } else if (v !== empty(f)) query.set(f.key, typeof v === 'boolean' ? '1' : String(v))
   }
   const qs = query.toString()
-  return `${origin}${def.path}${qs ? `?${qs}` : ''}`
+  return `${def.base ?? origin}${path}${qs ? `?${qs}` : ''}`
 }
 
-/** A saved preset's link: the overlay reads its settings from vex-auth, so editing the preset changes the source. */
-export const presetUrl = (origin: string, def: OverlayDef, publicId: string): string =>
-  `${origin}${def.path}?${new URLSearchParams({ [PRESET_PARAM]: publicId })}`
+/** A saved preset's link: the overlay reads its settings from vex-auth, so editing the preset changes the source.
+ *  `values` are the preset's, for a path that needs some of them (the channel). */
+export function presetUrl(origin: string, def: OverlayDef, publicId: string, values: OverlayValues = {}): string {
+  const path = pathFor(def, coerce(def, (k) => values[k], 'empty'))
+  return path === null ? '' : `${def.base ?? origin}${path}?${new URLSearchParams({ [PRESET_PARAM]: publicId })}`
+}
 
 /** The settings a link made by overlayUrl carries, or null when it isn't a link to this overlay. */
 export function valuesFromUrl(def: OverlayDef, link: string): OverlayValues | null {
@@ -243,7 +298,12 @@ export function valuesFromUrl(def: OverlayDef, link: string): OverlayValues | nu
   } catch {
     return null
   }
-  return url.pathname.replace(/\/+$/, '') === def.path ? overlayValues(def, url.searchParams) : null
+  const keys = pathKeys(def)
+  const pattern = def.path.split(PLACEHOLDER).map((part, i) => (i % 2 ? '([^/]+)' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).join('')
+  const m = new RegExp(`^${pattern}$`).exec(url.pathname.replace(/\/+$/, ''))
+  if (!m) return null
+  const fromPath = Object.fromEntries(keys.map((k, i) => [k, decodeURIComponent(m[i + 1]!)]))
+  return coerce(def, (k) => (k in fromPath ? fromPath[k] : queryParam(url.searchParams, k)), 'empty')
 }
 
 /** Whether two sets of settings are the same overlay state. */

@@ -16,7 +16,7 @@ const router = createRouter({
     { path: '/account', component: () => import('./pages/AccountPage.vue'), meta: { title: 'Profile' } },
     { path: '/obs_sources', component: () => import('./pages/ObsSourcesPage.vue'), meta: { title: 'OBS sources' } },
     // Browser sources for OBS: transparent, no site chrome or starfield.
-    ...OVERLAYS.map((o) => ({ path: o.path, component: o.page, meta: { title: o.name } })),
+    ...OVERLAYS.flatMap((o) => (o.page ? [{ path: o.path, component: o.page, meta: { title: o.name } }] : [])),
     // Hands an https link over to an app link (obsidian://, …); see lib/redirect.
     { path: '/tools/httpsredirect', component: () => import('./pages/HttpsRedirectPage.vue'), meta: { title: 'Open app link' } },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('./pages/NotFoundPage.vue'), meta: { title: 'Not found' } },
