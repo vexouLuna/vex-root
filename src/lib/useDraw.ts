@@ -23,7 +23,15 @@ export function useDraw(values: Ref<OverlayValues | null>, fileSrc: (ref: string
   const busy = ref(false)
   const removed = ref(0)
 
-  watch(settings, (s) => reset(s), { immediate: true })
+  watch(
+    settings,
+    (s) => {
+      reset(s)
+      // Fetch the pictures now, so none is still loading as it rolls past.
+      for (const o of s?.o ?? []) if (o.image) new Image().src = fileSrc(o.image)
+    },
+    { immediate: true },
+  )
 
   let spinning: HTMLAudioElement | undefined
   let timer: ReturnType<typeof setTimeout> | undefined
