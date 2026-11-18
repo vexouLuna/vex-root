@@ -101,6 +101,14 @@ export const OVERLAYS: OverlayDef[] = [
     page: () => import('@/pages/WheelPage.vue'),
     fields: RANDOM_FIELDS(false),
   },
+  {
+    id: 'case',
+    name: 'Case opening',
+    about: `A case that opens onto a strip of items rolling past a marker, stopping on a weighted pick. Each item is coloured by how rare its weight makes it (blue, purple, pink, red, gold), unless it has its own colour. ${CONTROLS_NOTE}`,
+    path: '/obs_sources/case',
+    page: () => import('@/pages/CasePage.vue'),
+    fields: [{ key: 'img', label: 'Case picture', type: 'file', accept: 'image', default: '' }, ...RANDOM_FIELDS(true)],
+  },
 ]
 
 const FILE_ID = /^[A-Za-z0-9_-]{16,64}$/
